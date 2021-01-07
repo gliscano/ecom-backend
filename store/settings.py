@@ -16,7 +16,7 @@ from datetime import timedelta
 from os.path import join, dirname
 from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-dotenv_path = join(dirname(__file__), '../.env')
+dotenv_path = join(dirname(__file__), '../env.dev')
 load_dotenv(dotenv_path)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
