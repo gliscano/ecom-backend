@@ -20,10 +20,10 @@ COPY ./requirements.txt /code/
 RUN pip install -r requirements.txt
 
 # copy entrypoint.sh
-COPY entrypoint.sh .
+COPY entrypoint.sh /code/
 
 # copy project
 COPY . /code/
 
 # run entrypoint.sh
-ENTRYPOINT ["/code/entrypoint.sh"]
+#ENTRYPOINT ["/code/entrypoint.sh"]
