@@ -26,4 +26,4 @@ COPY entrypoint.sh /code/
 COPY . /code/
 
 # run entrypoint.sh
-#ENTRYPOINT ["/code/entrypoint.sh"]
+ENTRYPOINT ["/code/entrypoint.sh"]
