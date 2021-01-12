@@ -12,8 +12,6 @@ class StoreSerializer(serializers.ModelSerializer):
             'user_id',
             'description',
             'keywords',
-            'logo_url',
-            'banner_url',
             'title',
             'phone',
             'facebook',

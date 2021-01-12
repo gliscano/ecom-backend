@@ -22,6 +22,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    label = None
+    allow_null = None
 
     email = serializers.EmailField(
         required=True
@@ -94,11 +96,45 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['token'] = token
 
         return super(UserSerializer, self).create(validated_data)
+def required(value):
+    if value is None:
+        raise serializers.ValidationError('This field is required')
 
 class UserLoginSerilizer(serializers.ModelSerializer):
-    email = serializers.EmailField()
-    password = serializers.CharField(min_length=8, max_length=64)
-        
+    class Meta:
+        model = CustomUser
+        fields = (
+            'password',
+        )
+        extra_kwargs = {
+        'email  ': {'required': True},
+        }
+
+  
+class ForgotPasswordSerilizer(serializers.Serializer):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'email',
+        )
+        extra_kwargs = {
+        'email  ': {'read_only': True},
+        }
+
+  
+  
+class ResetPasswordSerilizer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'password',
+        )
+        extra_kwargs = {
+            'password  ': {'required': True,'write_only':True},
+        }
+
+  
+
 class AddressSerializer(serializers.ModelSerializer):
  
     class Meta:
@@ -122,16 +158,14 @@ class AddressSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if validated_data['owner_type'] != 'user' and validated_data['owner_type'] != 'store':
             raise serializers.ValidationError('invalid owner_type')
-
+       
         try:
-            print(validated_data)
             if validated_data['owner_type'] == 'user':
                 CustomUser.objects.get(id = 8)
             elif validated_data['owner_type'] == 'store':
                 Store.objects.get(store_id = validated_data['owner_id'])
             
         except Exception as e:
-            print(traceback.format_exc())
             raise NotFound("Owner not found")
         return super(AddressSerializer, self).create(validated_data)
 

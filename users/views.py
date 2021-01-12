@@ -1,6 +1,6 @@
 import json
 from users.models import User, Address, CustomUser
-from users.serializers import UserSerializer, AddressSerializer, UserLoginSerilizer, MyTokenObtainPairSerializer, CustomUserSerializer
+from users.serializers import UserSerializer, AddressSerializer, UserLoginSerilizer, MyTokenObtainPairSerializer, CustomUserSerializer, ForgotPasswordSerilizer, ResetPasswordSerilizer
 from rest_framework import generics
 from rest_framework import permissions
 from django.contrib.sites.shortcuts import get_current_site
@@ -18,25 +18,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class UserList(generics.ListCreateAPIView):
+class UserList(generics.ListAPIView):
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
 
-    def perform_create(self, serializer):
-        instance = serializer.save()
-
-        current_site = get_current_site(self.request).domain
-        #relative_link = reverse('email_verify', kwargs={'token':instance.token,'pk':})
-
-        absolute_url = 'http://example.domain.com/verify/email/'+ instance.token
-        email_body = 'Hi ' + instance.name + ' use the link below to verify your email ' +absolute_url
-        data = {
-            'domain':absolute_url,
-            'email_subject': 'Verify Your Email',
-            'email_body': email_body,
-            'email_reciver': instance.email,
-        }
-        Util.send_email(data)
 
 class VerifyEmail(generics.UpdateAPIView):
     permission_classes = (permissions.AllowAny,)
@@ -51,10 +36,59 @@ class VerifyEmail(generics.UpdateAPIView):
             return Response('invalid token', status=status.HTTP_400_BAD_REQUEST)
         
         data = {'status':'active'}
-        serializer = UserSerializer(user, data=data, partial=True)
+        serializer = CustomUserSerializer(user, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+
+class ResetPassword(generics.UpdateAPIView):
+    permission_classes = (permissions.AllowAny,)
+
+    serializer_class = CustomUserSerializer
+    http_method_names = ['post']
+    def post(self, request, token):
+        try:
+            decoded_token = json.loads(Util.cryptograpy_text(token, False))
+            user = CustomUser.objects.get(username=decoded_token['username'])
+        except ObjectDoesNotExist:
+            return Response('invalid token', status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response('invalid token', status=status.HTTP_400_BAD_REQUEST)
+            
+        data = {'password':make_password(request.data['password'])}
+        print(request.data['password'])
+        serializer = CustomUserSerializer(user ,data=data,  partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({})
+
+class ChangePassword(generics.UpdateAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = ForgotPasswordSerilizer
+    http_method_names = ['post']
+
+    def post(self, request):
+        serializer = ForgotPasswordSerilizer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = CustomUser.objects.get(email=request.data['email'])
+        except ObjectDoesNotExist:
+            return Response('invalid email', status=status.HTTP_400_BAD_REQUEST)
+        token = Util.cryptograpy_text(json.dumps({
+            'email': user.email,
+            'username': user.username,
+        }))
+
+        absolute_url = 'http://example.domain.com/reset_password/'+ token
+        email_body = f"Hi Please use the link below to change your password your email: {absolute_url}, If you didn't request the password change please ignore this email. " 
+        data = {
+            'email_subject': 'Change password security system',
+            'email_body': email_body,
+            'email_reciver': user.email,
+        }
+        Util.send_email(data)
+        return Response(serializer.data)
+
 
 class LoginUser(generics.RetrieveAPIView):
     permission_classes = (permissions.AllowAny,)
