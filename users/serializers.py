@@ -19,9 +19,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    """
-    Currently unused in preference of the below.
-    """
+
     email = serializers.EmailField(
         required=True
     )
@@ -43,11 +41,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'token  ': {'write_only': True},
             'status  ': {'read_only': True},
             }
-
-    #def validate_password(self, value: str) -> str:
-
-     
-     #   return make_password(value)
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)

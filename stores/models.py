@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import User
+from users.models import User, CustomUser
 
 # Create your models here.
 
@@ -21,7 +21,7 @@ class Store(models.Model):
     facebook = models.CharField(max_length = 200, blank = False)
     instagram = models.CharField(max_length = 200, blank = False)
     status = models.CharField(max_length = 20, choices=STATUS_CHOICES,default='active')
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name = 'owner_id')
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name = 'owner_id')
     date_created = models.DateTimeField(auto_now=False, auto_now_add=True, blank = False )
     date_lastupdated = models.DateTimeField(auto_now=True, auto_now_add=False,blank = False)
 

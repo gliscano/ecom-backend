@@ -13,9 +13,10 @@ from rest_framework import status
 from rest_framework.views import APIView
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import make_password
+import logging
 
 
-
+logger = logging.getLogger(__name__)
 
 class UserList(generics.ListCreateAPIView):
     serializer_class = CustomUserSerializer
@@ -84,11 +85,26 @@ class CustomUserCreate(APIView):
         if serializer.is_valid():
             try:
                 user = serializer.save()
+                data = serializer.validated_data
+                #current_site = get_current_site(self.request).domain
+                #relative_link = reverse('email_verify', kwargs={'token':instance.token,'pk':})
+
+                absolute_url = 'http://example.domain.com/verify/email/'+ user.token
+                email_body = f'Hi {user.name} {user.lastname}, wellcome to the platform. Please use the link below to verify your email: {absolute_url}, enjoy the platform.'
+                data = {
+                    'email_subject': 'Account Activation',
+                    'email_body': email_body,
+                    'email_reciver': user.email,
+                }
+                Util.send_email(data)
             except Exception as e:
                 if 'username' in str(e):
                     msg = 'username already taken' 
                 elif 'email' in str(e):
                     msg = 'email already taken' 
+                else:
+                    msg = 'Internal Server Error' 
+                logger.error(str(e))
 
                 return Response({"msg":str(msg)}, status=status.HTTP_400_BAD_REQUEST)
 
