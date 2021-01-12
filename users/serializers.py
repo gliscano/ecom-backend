@@ -1,15 +1,18 @@
 from rest_framework import serializers 
-from users.models import User, Address
+from users.models import User, Address, CustomUser
+from stores.models import Store
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound, ValidationError, ParseError
 from .utils import Util
-from .models import CustomUser
+
+from rest_framework.response import Response
 
 from rest_framework import status
 import json 
 
 import secrets
+import traceback
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -54,7 +57,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         validated_data['token'] = token
         instance = self.Meta.model(**validated_data)  # as long as the fields are the same, we can just use this
         if password is not None:
-            print(password)
             instance.set_password(password)
         instance.save()
         return instance
@@ -88,7 +90,7 @@ class UserSerializer(serializers.ModelSerializer):
                 'username': validated_data['username'],
             }))
         except:
-            ValidationError('invalid Token', status=status.HTTP_400_BAD_REQUEST)
+            return Response('invalid Token', status=status.HTTP_400_BAD_REQUEST)
         validated_data['token'] = token
 
         return super(UserSerializer, self).create(validated_data)
@@ -118,10 +120,19 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
     def create(self, validated_data):
+        if validated_data['owner_type'] != 'user' and validated_data['owner_type'] != 'store':
+            raise serializers.ValidationError('invalid owner_type')
+
         try:
-            User.objects.get(user_id = validated_data['owner_id'])
-        except:
-            raise NotFound("User not found")
+            print(validated_data)
+            if validated_data['owner_type'] == 'user':
+                CustomUser.objects.get(id = 8)
+            elif validated_data['owner_type'] == 'store':
+                Store.objects.get(store_id = validated_data['owner_id'])
+            
+        except Exception as e:
+            print(traceback.format_exc())
+            raise NotFound("Owner not found")
         return super(AddressSerializer, self).create(validated_data)
 
 

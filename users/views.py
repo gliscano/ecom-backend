@@ -119,6 +119,8 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CustomUserSerializer
 
 class AddressList(generics.ListCreateAPIView):
+    permission_classes = (permissions.AllowAny,)
+
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
 
