@@ -2,6 +2,7 @@ from django.core.mail import EmailMessage
 from django.core.mail import send_mail as sm
 from django.conf import settings
 from cryptography.fernet import Fernet
+
 class Util:
     @staticmethod
     def send_email(email_content):

@@ -21,7 +21,6 @@ class StoreSerializer(serializers.ModelSerializer):
 
         wrapper_name = 'stores'
 
-
         extra_kwargs = {
             'user_id':{'write_only': True}
         }

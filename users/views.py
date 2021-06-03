@@ -1,4 +1,5 @@
 import json
+from users import serializers
 from users.models import User, Address, CustomUser
 from users.serializers import UserSerializer, AddressSerializer, UserLoginSerilizer, MyTokenObtainPairSerializer, CustomUserSerializer, ForgotPasswordSerilizer, ResetPasswordSerilizer
 from rest_framework import generics
@@ -103,7 +104,7 @@ class LoginUser(generics.RetrieveAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid token', status=status.HTTP_404_NOT_FOUND)
         
-class ObtainTokenPairWithColorView(TokenObtainPairView):
+class MyTokenObtainPairView(TokenObtainPairView):
     permission_classes = (permissions.AllowAny,)
 
     serializer_class = MyTokenObtainPairSerializer
@@ -148,6 +149,22 @@ class CustomUserCreate(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class UserInfoAPIView(generics.RetrieveAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = CustomUserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+class UserAddressInfoAPIView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = AddressSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Address.objects.filter(owner_id=user.id, owner_type='user')
+
+
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
@@ -161,6 +178,10 @@ class AddressList(generics.ListCreateAPIView):
 class AddressDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
+
+    def get_object(self):
+        user = self.request.user
+        return Address.objects.filter(address_id=id,owner_id=user.id, owner_type='user')
 
 
 

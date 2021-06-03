@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users.apps.UsersConfig',
     'stores.apps.StoresConfig',
+    'carts.apps.CartsConfig',
 
     # CORS
     'corsheaders',

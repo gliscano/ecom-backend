@@ -15,15 +15,18 @@ import secrets
 import traceback
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
-        # Add custom claims
-        return token
+    def validate(self, attrs):
+            data = super().validate(attrs)
+            refresh = self.get_token(self.user)
+            # Add extra responses here
+            data.update({'user_id':self.user.id})
+            return data
 
+    
 class CustomUserSerializer(serializers.ModelSerializer):
     label = None
     allow_null = None
+    #user_id = serializers.CharField(source='id')
 
     email = serializers.EmailField(
         required=True
@@ -45,6 +48,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
             'token  ': {'write_only': True},
             'status  ': {'read_only': True},
+            'id  ': {'read_only': True},
             }
 
     def create(self, validated_data):
