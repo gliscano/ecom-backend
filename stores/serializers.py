@@ -3,7 +3,7 @@ from stores.models import Store, Category, Product
  
  
 class StoreSerializer(serializers.ModelSerializer):
- 
+
     class Meta:
         model = Store
         fields = (
@@ -57,8 +57,6 @@ class ProductSerializer(serializers.ModelSerializer):
 
         wrapper_name = 'products'
 
-
         extra_kwargs = {
-            'category_id':{'write_only': True},
             'store_id':{'write_only': True}
         }

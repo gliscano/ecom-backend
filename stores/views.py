@@ -19,10 +19,15 @@ class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.filter(parent_category_id=None)
     serializer_class = CategorySerializer
 
+class SubCategoryDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
     
 class StoreList(generics.ListCreateAPIView):
     queryset = Store.objects.all()
     serializer_class = StoreSerializer
+
 
 class StoreDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Store.objects.all()

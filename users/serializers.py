@@ -21,6 +21,11 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             # Add extra responses here
             data.update({'user_id':self.user.id})
             return data
+            
+class MyTokenRefreshPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+            data = super().validate(attrs)
+            return data
 
     
 class CustomUserSerializer(serializers.ModelSerializer):

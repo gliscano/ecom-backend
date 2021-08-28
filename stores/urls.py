@@ -10,6 +10,7 @@ urlpatterns = [
     path('products/<int:pk>', views.ProductDetail.as_view()),
     path('categories/', views.CategoryList.as_view()),
     path('categories/<int:pk>', views.CategoryDetail.as_view()),
+    path('subcategories/<int:pk>', views.SubCategoryDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

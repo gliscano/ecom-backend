@@ -1,7 +1,9 @@
 import json
 from users import serializers
 from users.models import User, Address, CustomUser
-from users.serializers import UserSerializer, AddressSerializer, UserLoginSerilizer, MyTokenObtainPairSerializer, CustomUserSerializer, ForgotPasswordSerilizer, ResetPasswordSerilizer
+from stores.models import Store
+from stores.serializers import StoreSerializer
+from users.serializers import UserSerializer, AddressSerializer, UserLoginSerilizer, MyTokenObtainPairSerializer, CustomUserSerializer, ForgotPasswordSerilizer, ResetPasswordSerilizer, MyTokenRefreshPairSerializer
 from rest_framework import generics
 from rest_framework import permissions
 from django.contrib.sites.shortcuts import get_current_site
@@ -81,7 +83,7 @@ class ChangePassword(generics.UpdateAPIView):
         }))
 
         absolute_url = 'http://example.domain.com/reset_password/'+ token
-        email_body = f"Hi Please use the link below to change your password your email: {absolute_url}, If you didn't request the password change please ignore this email. " 
+        email_body = f"Hi Please use the link below to change your password your email: {absolute_url}, If you didn't request the password change please ignore this email. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum" 
         data = {
             'email_subject': 'Change password security system',
             'email_body': email_body,
@@ -106,8 +108,11 @@ class LoginUser(generics.RetrieveAPIView):
         
 class MyTokenObtainPairView(TokenObtainPairView):
     permission_classes = (permissions.AllowAny,)
-
     serializer_class = MyTokenObtainPairSerializer
+
+class MyTokenRefreshPairView(TokenObtainPairView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = MyTokenRefreshPairSerializer
 
 
 class CustomUserCreate(APIView):
@@ -125,7 +130,7 @@ class CustomUserCreate(APIView):
                 #relative_link = reverse('email_verify', kwargs={'token':instance.token,'pk':})
 
                 absolute_url = 'http://example.domain.com/verify/email/'+ user.token
-                email_body = f'Hi {user.name} {user.lastname}, wellcome to the platform. Please use the link below to verify your email: {absolute_url}, enjoy the platform.'
+                email_body = f'Hi {user.name} {user.lastname}, wellcome to the platform. Please use the link below to verify your email: {absolute_url}, enjoy the platform.  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum'
                 data = {
                     'email_subject': 'Account Activation',
                     'email_body': email_body,
@@ -147,6 +152,11 @@ class CustomUserCreate(APIView):
                 json = serializer.data
                 return Response(json, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResendEmailInfo(APIView):
+    def post(self, request, format='json'):
+        return Response(json, status=status.HTTP_201_CREATED)
 
 
 class UserInfoAPIView(generics.RetrieveAPIView):
@@ -176,9 +186,11 @@ class AddressList(generics.ListCreateAPIView):
     serializer_class = AddressSerializer
 
 class AddressDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
-
+    #add handler for store
     def get_object(self):
         user = self.request.user
         return Address.objects.filter(address_id=id,owner_id=user.id, owner_type='user')
@@ -186,3 +198,9 @@ class AddressDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+class UserStorelist(generics.ListAPIView):
+    queryset = Store.objects.all()
+    serializer_class = StoreSerializer
+
+    def get_queryset(self):
+        return Store.objects.filter(user_id=self.kwargs['pk'])
